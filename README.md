@@ -35,3 +35,5 @@ Trong này ko dùng localhost mà dùng theo ip máy. Mở CMD gõ ipconfig và 
 ### Lưu ý.
 
 Có cái folder `constants` chứa file `config.js` import cái IP vào để thay đổi khi cần thiết. Này là biến toàn cục thay cho env vì env cần build lại mỗi lần. Tuy nhiên cẫn cần xài env `eas env:pull --environment development` chạy này trong terminal để xài env oke.
+
+Có thể tải trên điện thoại nhưng phải cùng mạng với máy tính.
