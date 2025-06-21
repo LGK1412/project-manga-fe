@@ -2,8 +2,7 @@ import { useState, useContext } from 'react';
 import { TouchableOpacity, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
-
-const IP = '192.168.1.8';
+import { IP } from '../constants/config';
 
 export default function ResetPasswordButton({ email, code, newPassword }) {
   const [loading, setLoading] = useState(false);

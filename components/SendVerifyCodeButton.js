@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { TouchableOpacity, Text, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IP } from '../constants/config';
 
 const SendVerifyCodeButton = ({ cooldown = 60, emailTemp }) => {
-    const IP = '192.168.1.8'
     const [timer, setTimer] = useState(0);
     const [loading, setLoading] = useState(false); // 👈 thêm
 

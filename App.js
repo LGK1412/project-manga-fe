@@ -10,6 +10,9 @@ import LoginRegisterScreen from './screens/LoginRegisterScreen';
 import VerificationScreen from './screens/VerificationScreen'
 import ForgetPasswordScreen from './screens/ForgetPasswordScreen';
 import ChangePasswordScreen from './screens/ChangePasswordScreen';
+import UpdateUserProfileScreen from './screens/UpdateUserProfileScreen';
+import Toast from 'react-native-toast-message';
+import UploadAvatarScreen from './screens/UploadAvatarScreen';
 import { IP } from './constants/config';
 
 import * as SecureStore from 'expo-secure-store';
@@ -43,6 +46,8 @@ export default function App() {
             <>
               <Stack.Screen name="Home" component={HomeScreen} />
               <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+              <Stack.Screen name="UpdateUserProfile" component={UpdateUserProfileScreen} />            
+              <Stack.Screen name="UploadAvatar" component={UploadAvatarScreen} />
               {/* `Đừng để Verification ở đây */}
             </>
           ) : (
@@ -54,6 +59,7 @@ export default function App() {
           )}
         </Stack.Navigator>
       </NavigationContainer>
+      <Toast/>
     </AuthContext.Provider>
   );
 }

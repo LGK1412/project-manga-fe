@@ -3,9 +3,8 @@ import { TouchableOpacity, Text, StyleSheet, Alert, ActivityIndicator } from 're
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // <== MISSING
-
-const IP = '192.168.1.8';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IP } from '../constants/config';
 
 export default function ResetChangePasswordButton({ email, code, newPassword }) {
     const [loading, setLoading] = useState(false);

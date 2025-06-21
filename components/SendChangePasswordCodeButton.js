@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TouchableOpacity, Text, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-
-const IP = '192.168.1.8';
+import { IP } from '../constants/config';
 
 export default function SendChangePasswordCodeButton({ email, token }) {
     const [timer, setTimer] = useState(0);

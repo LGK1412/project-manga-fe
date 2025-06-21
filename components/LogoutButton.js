@@ -3,9 +3,9 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import { IP } from '../constants/config';
 
 const LogoutButton = () => {
-    const IP = '192.168.1.8';
     const { setIsLoggedIn } = useContext(AuthContext);
 
     const handleLogout = async () => {

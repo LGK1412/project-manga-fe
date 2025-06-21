@@ -7,9 +7,9 @@ import { Buffer } from 'buffer';
 import { AuthContext } from '../contexts/AuthContext';
 import { useContext } from 'react';
 import Constants from 'expo-constants';
+import { IP } from '../constants/config';
 
 export default function GoogleSignInButton() {
-  const IP = '192.168.1.8'
   const { setIsLoggedIn } = useContext(AuthContext);
 
   useEffect(() => {

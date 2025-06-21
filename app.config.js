@@ -5,7 +5,7 @@ export default {
     expo: {
         name: "google-signin-app",
         slug: "google-signin-app",
-        version: "1.0.11",
+        version: "1.0.13",
         orientation: "portrait",
         icon: "./assets/icon.png",
         userInterfaceStyle: "light",

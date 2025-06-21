@@ -10,10 +10,10 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import ForgetPasswordButton from '../components/ForgetPasswordButton';
+import { IP } from '../constants/config';
 
 const LoginRegisterScreen = () => {
 
-    const IP = '192.168.1.8'
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState('');
@@ -71,7 +71,7 @@ const LoginRegisterScreen = () => {
                 await AsyncStorage.removeItem('userInfo');
 
                 const decoded = decodeToken(result.token);
-                console.log('Decoded JWT:', decoded);
+                // console.log('Decoded JWT:', decoded);
 
                 if (!decoded.verified) {
                     alert('Tài khoản của bạn chưa được xác minh.');
@@ -188,6 +188,7 @@ const LoginRegisterScreen = () => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Email"
+                                placeholderTextColor="#999"
                                 value={values.email}
                                 onChangeText={handleChange('email')}
                                 onBlur={handleBlur('email')}
@@ -199,6 +200,7 @@ const LoginRegisterScreen = () => {
                                 <TextInput
                                     style={styles.inputPass}
                                     placeholder="Mật khẩu"
+                                    placeholderTextColor="#999"
                                     value={values.password}
                                     onChangeText={(text) => {
                                         handleChange('password')(text)
@@ -219,6 +221,7 @@ const LoginRegisterScreen = () => {
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Xác nhận mật khẩu"
+                                        placeholderTextColor="#999"
                                         value={values.confirmPassword}
                                         onChangeText={(text) => {
                                             handleChange('confirmPassword')(text)
@@ -244,7 +247,7 @@ const LoginRegisterScreen = () => {
                             </TouchableOpacity>
 
 
-                            {isLogin && <ForgetPasswordButton/>}
+                            {isLogin && <ForgetPasswordButton />}
                             <Text style={styles.orText}>HOẶC</Text>
 
                             <GoogleSignInButton />
@@ -398,6 +401,7 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: 40,
+        color: 'black',
     },
 });
 

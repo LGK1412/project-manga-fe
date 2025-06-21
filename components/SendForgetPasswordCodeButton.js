@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TouchableOpacity, Text, Alert, StyleSheet, ActivityIndicator } from 'react-native';
-
-const IP = '192.168.1.8'; // 👈 sửa IP phù hợp
+import { IP } from '../constants/config';
 
 export default function SendForgetPasswordCodeButton({ email }) {
   const [timer, setTimer] = useState(0);

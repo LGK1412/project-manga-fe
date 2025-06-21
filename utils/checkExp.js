@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
+import { IP } from '../constants/config';
 
 export async function checkTokenExpiry() {
     const stored = await AsyncStorage.getItem('userInfo');
@@ -12,7 +13,7 @@ export async function checkTokenExpiry() {
 
     if (user.exp < now) {
         try {
-            const result = await fetch('http://192.168.1.7:333/api/auth/logout', {
+            const result = await fetch(`http://${IP}:333/api/auth/logout`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

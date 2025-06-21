@@ -3,9 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import SendVerifyCodeButton from '../components/SendVerifyCodeButton';
 import { useRoute } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
-const VerificationScreen = () => {
-    const IP = '192.168.1.181'
+import { IP } from '../constants/config';
 
+const VerificationScreen = () => {
     const [code, setCode] = useState('');
 
     const route = useRoute();
