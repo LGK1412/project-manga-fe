@@ -4,9 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { IP } from '../constants/config';
+import { useNavigation } from '@react-navigation/native';
 
 const LogoutButton = () => {
     const { setIsLoggedIn } = useContext(AuthContext);
+    const navigation = useNavigation();
 
     const handleLogout = async () => {
         try {
@@ -28,6 +30,7 @@ const LogoutButton = () => {
             if (result.success) {
                 await SecureStore.deleteItemAsync('userToken');
                 await AsyncStorage.removeItem('userInfo');
+                navigation.navigate('Home');
                 setIsLoggedIn(false);
             } else {
                 Alert.alert('Logout Failed', result.message || 'Something went wrong');

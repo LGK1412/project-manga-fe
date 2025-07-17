@@ -28,10 +28,12 @@ npx expo start
 
 Sau khi mà chạy expo thì nó sẽ có cái link copy nó vào r chạy trong google của LD Player. Tải và cài đặt APK r sau đó mở lên và dùng như EXPO GO.
 
-Vào link `https://expo.dev/accounts/lgk1412/projects/google-signin-app/builds/4fada388-29c3-4865-82ed-1eedee2235a2` tải apk về cài trên LD player hoặc xài Android studio thì khỏi. Link dc cập nhật liên tục sau mỗi lần build.
+Vào link `https://expo.dev/accounts/lgk1412/projects/google-signin-app/builds/1ad24c65-86de-4efe-b63e-8af4709b9ff4` tải apk về cài trên LD player hoặc xài Android studio thì khỏi. Link dc cập nhật liên tục sau mỗi lần build.
 
 Trong này ko dùng localhost mà dùng theo ip máy. Mở CMD gõ ipconfig và tìm IPv4 Address đầu tiên. R lấy cái đó thay cho localhost (cái này cho API).
 
 ### Lưu ý.
 
 Có cái folder `constants` chứa file `config.js` import cái IP vào để thay đổi khi cần thiết. Này là biến toàn cục thay cho env vì env cần build lại mỗi lần. Tuy nhiên cẫn cần xài env `eas env:pull --environment development` chạy này trong terminal để xài env oke.
+
+Có thể tải trên điện thoại nhưng phải cùng mạng với máy tính.

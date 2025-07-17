@@ -14,6 +14,7 @@ import ChangePasswordButton from '../components/ChangePasswordButton';
 import { useLayoutEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import BackHeader from '../components/BackHeader';
+import { IP } from "../constants/config"
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Họ tên không được để trống'),

@@ -13,12 +13,12 @@ const VerificationScreen = () => {
     console.log(email)
     const navigation = useNavigation();
 
-    const handleSubmit = async () => {        
+    const handleSubmit = async () => {
         if (code.trim().length === 0) {
             Alert.alert('Lỗi', 'Nhập mã xác minh');
             return;
         }
-        
+
         try {
             const res = await fetch(`http://${IP}:333/api/auth/verify-verification-code`, {
                 method: 'PATCH',

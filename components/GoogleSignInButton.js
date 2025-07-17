@@ -8,13 +8,14 @@ import { AuthContext } from '../contexts/AuthContext';
 import { useContext } from 'react';
 import Constants from 'expo-constants';
 import { IP } from '../constants/config';
+import Toast from 'react-native-toast-message';
 
 export default function GoogleSignInButton() {
   const { setIsLoggedIn } = useContext(AuthContext);
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: Constants.expoConfig.extra.WEB_CLIENT_ID,
+      webClientId: '682663221551-gja7tocds42r31hdqhu99k97faq1nfu5.apps.googleusercontent.com', // Your web client ID
     });
   }, []);
 
@@ -50,10 +51,11 @@ export default function GoogleSignInButton() {
   const signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
+      await GoogleSignin.signOut();
       const userInfos = await GoogleSignin.signIn();
 
       const idToken = userInfos.data.idToken;
-
+      // console.log(idToken)
       const userInfo = userInfos.data.user
       // console.log(userInfo)
       const res = await fetch(`http://${IP}:333/api/auth/google`, {
@@ -69,6 +71,20 @@ export default function GoogleSignInButton() {
 
       const result = await res.json();
 
+      if (!result.success) {
+        Toast.show({
+          type: 'error',
+          text1: 'Thông báo',
+          text2: result.message || 'Lỗi không xác định',
+        });
+      } else {
+        Toast.show({
+          type: 'success',
+          text1: 'Thông báo',
+          text2: result.message,
+        });
+      }
+
       await saveUserInfo(result)
     } catch (error) {
       console.error(error);
@@ -81,7 +97,7 @@ export default function GoogleSignInButton() {
       <TouchableOpacity onPress={signIn}>
         <Image
           source={require('../assets/google_icon.png')}
-          style={{ width: 40, height: 40, borderRadius: 100, borderColor: 'black', borderWidth: 1}}
+          style={{ width: 40, height: 40, borderRadius: 100, borderColor: 'black', borderWidth: 1 }}
           resizeMode="contain"
         />
       </TouchableOpacity>
