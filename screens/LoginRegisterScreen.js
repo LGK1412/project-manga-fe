@@ -98,11 +98,7 @@ const LoginRegisterScreen = () => {
     const handleSubmit = async (values) => {
         if (isLogin) {
             try {
-<<<<<<< HEAD
-                const res = await fetch(`http://${IP}:333/api/auth/signin`, {
-=======
                 const res = await fetch(`http://192.168.1.169:333/api/auth/signin`, {
->>>>>>> e483284 (push front-end FE lên branch leloi)
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -126,11 +122,9 @@ const LoginRegisterScreen = () => {
             }
         } else {
             try {
-<<<<<<< HEAD
-                const res = await fetch(`http://${IP}:333/api/auth/signup`, {
-=======
+
                 const res = await fetch(`http://192.168.1.169:333/api/auth/signup`, {
->>>>>>> e483284 (push front-end FE lên branch leloi)
+
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

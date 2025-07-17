@@ -76,7 +76,7 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
         return;
       }
       const res = await axios.post(
-        `http://192.168.1.169:333/api/comment/manga/${manga._id}`,
+        `http://10.66.183.116:333/api/comment/manga/${manga._id}`,
         { userId: user._id, content: newComment }
       );
       if (res.data.success) {
@@ -100,7 +100,7 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
     }
     try {
       const res = await axios.patch(
-        `http://192.168.1.169:333/api/comment/like/${commentId}`,
+        `http://10.66.183.116:333/api/comment/like/${commentId}`,
         { userId: user._id }
       );
       if (res.data.success) {
@@ -134,7 +134,7 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
         { text: "Cancel", style: "cancel" },
         { text: "Report", style: "destructive", onPress: async () => {
           try {
-            await axios.post(`http://192.168.1.169:333/api/comment/report/${commentId}`, {
+            await axios.post(`http://10.66.183.116:333/api/comment/report/${commentId}`, {
               userId: user._id,
               reason: "Inappropriate comment",
             });
@@ -152,7 +152,7 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
     setError(null);
 
     axios
-      .get(`http://192.168.1.169:333/api/manga/${id}`)
+      .get(`http://10.66.183.116:333/api/manga/${id}`)
       .then((resp) => {
         const { success, data } = resp.data;
 

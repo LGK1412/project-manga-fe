@@ -20,11 +20,10 @@ const VerificationScreen = () => {
         }
         
         try {
-<<<<<<< HEAD
-            const res = await fetch(`http://${IP}:333/api/auth/verify-verification-code`, {
-=======
+
+
             const res = await fetch(`http://192.168.1.169:333/api/auth/verify-verification-code`, {
->>>>>>> e483284 (push front-end FE lên branch leloi)
+
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

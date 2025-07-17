@@ -1,33 +1,3 @@
-<<<<<<< HEAD
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { useState, useCallback } from 'react';
-import LogoutButton from '../components/LogoutButton';
-import ChangePasswordButton from '../components/ChangePasswordButton';
-import EditProfileButton from '../components/EditProfileButton';
-import AvatarButton from '../components/AvatarButton';
-
-export default function HomeScreen({ navigation }) {
-  const [refreshing, setRefreshing] = useState(false);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    // Delay để mô phỏng việc load lại, có thể thêm logic gọi API nếu cần
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  }, []);
-
-  return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <Text style={styles.title}>Trang Home</Text>
-      <LogoutButton />
-      <ChangePasswordButton />
-      <EditProfileButton />
-      <AvatarButton />
-=======
 import React, { useState, useEffect, useContext } from "react";
 import {
   View,
@@ -80,7 +50,7 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     setLoading(true);
     axios
-      .get("http://192.168.1.169:333/api/manga")
+      .get("http://10.66.183.116:333/api/manga")
       .then(({ data }) => {
         if (!data.success) {
           throw new Error(data.message || "Unknown error from API");
@@ -225,20 +195,12 @@ export default function HomeScreen({ navigation }) {
         ))}
       </View>
       <View style={styles.footer} />
->>>>>>> e483284 (push front-end FE lên branch leloi)
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-<<<<<<< HEAD
-    flexGrow: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff'
-  },
-  title: {
-    fontSize: 24, fontWeight: 'bold', marginBottom: 20
-  }
-=======
     flex: 1,
     backgroundColor: "#F5F5F5",
     padding: 16,
@@ -354,7 +316,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   footer: {
-    height: 100, // Blank footer with 100px height
+    height: 100, 
   },
->>>>>>> e483284 (push front-end FE lên branch leloi)
 });

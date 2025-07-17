@@ -18,7 +18,7 @@ import TopNav from "./TopNav";
 const screenWidth = Dimensions.get("window").width;
 
 // Base URL for images (adjust for your environment)
-const BASE_IMAGE_URL = "http://192.168.1.169:333/chapter/"; // Change to 10.0.2.2 for Android emulator, localhost for iOS simulator
+const BASE_IMAGE_URL = "http://10.66.183.116:333/chapter/"; // Change to 10.0.2.2 for Android emulator, localhost for iOS simulator
 
 export default function ChapterScreen({ route, navigation }) {
   const { mangaId, chapterNumber } = route.params;
@@ -40,7 +40,7 @@ export default function ChapterScreen({ route, navigation }) {
 
     axios
       .get(
-        `http://192.168.1.169:333/api/chapter/manga/${mangaId}/chapter/${chapterNumber}`
+        `http://10.66.183.116:333/api/chapter/manga/${mangaId}/chapter/${chapterNumber}`
       )
       .then(({ data }) => {
         if (!data.success || !data.data || !data.data.chapter) {
@@ -83,7 +83,7 @@ export default function ChapterScreen({ route, navigation }) {
   useEffect(() => {
     if (manga) {
       manga.image.forEach((fileName, idx) => {
-        const uri = `http://192.168.1.169:333/chapter/${fileName}`;
+        const uri = `http://10.66.183.116:333/chapter/${fileName}`;
         Image.getSize(
           uri,
           (width, height) =>
@@ -96,7 +96,7 @@ export default function ChapterScreen({ route, navigation }) {
 
   useEffect(() => {
     if (manga && manga._id) {
-      axios.get(`http://192.168.1.169:333/api/comment/chapter/${manga._id}`)
+      axios.get(`http://10.66.183.116:333/api/comment/chapter/${manga._id}`)
         .then(res => setComments(res.data.comments || []));
     }
   }, [manga]);
@@ -111,7 +111,7 @@ export default function ChapterScreen({ route, navigation }) {
         return;
       }
       const res = await axios.post(
-        `http://192.168.1.169:333/api/comment/chapter/${manga._id}`,
+        `http://10.66.183.116:333/api/comment/chapter/${manga._id}`,
         { userId, content: newComment }
       );
       if (res.data.success) {
@@ -135,7 +135,7 @@ export default function ChapterScreen({ route, navigation }) {
     }
     try {
       const res = await axios.patch(
-        `http://192.168.1.169:333/api/comment/like/${commentId}`,
+        `http://10.66.183.116:333/api/comment/like/${commentId}`,
         { userId: user._id }
       );
       if (res.data.success) {
@@ -169,7 +169,7 @@ export default function ChapterScreen({ route, navigation }) {
         { text: "Cancel", style: "cancel" },
         { text: "Report", style: "destructive", onPress: async () => {
           try {
-            await axios.post(`http://192.168.1.169:333/api/comment/report/${commentId}`, {
+            await axios.post(`http://10.66.183.116:333/api/comment/report/${commentId}`, {
               userId: user._id,
               reason: "Inappropriate comment",
             });

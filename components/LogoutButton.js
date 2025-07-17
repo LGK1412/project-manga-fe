@@ -14,11 +14,9 @@ const LogoutButton = () => {
             const userInfo = await AsyncStorage.getItem('userInfo');
             const user = JSON.parse(userInfo);
 
-<<<<<<< HEAD
-            const res = await fetch(`http://${IP}:333/api/auth/logout`, {
-=======
-            const res = await fetch(`http://192.168.1.169:333/api/auth/logout`, {
->>>>>>> e483284 (push front-end FE lên branch leloi)
+
+            const res = await fetch(`http://10.66.183.116:333/api/auth/logout`, {
+
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

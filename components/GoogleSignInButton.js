@@ -14,11 +14,8 @@ export default function GoogleSignInButton() {
 
   useEffect(() => {
     GoogleSignin.configure({
-<<<<<<< HEAD
-      webClientId: Constants.expoConfig.extra.WEB_CLIENT_ID,
-=======
+
       webClientId:'682663221551-gja7tocds42r31hdqhu99k97faq1nfu5.apps.googleusercontent.com', // Your web client ID
->>>>>>> e483284 (push front-end FE lên branch leloi)
     });
   }, []);
 
@@ -54,11 +51,10 @@ export default function GoogleSignInButton() {
   const signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
-<<<<<<< HEAD
-=======
+
       await GoogleSignin.signOut();
 
->>>>>>> e483284 (push front-end FE lên branch leloi)
+
       const userInfos = await GoogleSignin.signIn();
 
       const idToken = userInfos.data.idToken;
