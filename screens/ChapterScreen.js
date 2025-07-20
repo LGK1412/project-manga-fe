@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TextInput, Alert } from 'react-native';
 import TopNav from "./TopNav";
 import { IP } from "../constants/config"
+import * as SecureStore from 'expo-secure-store';
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -75,7 +76,7 @@ export default function ChapterScreen({ route, navigation }) {
     const fetchUserId = async () => {
       const userInfo = await AsyncStorage.getItem('userInfo');
       const user = userInfo ? JSON.parse(userInfo) : null;
-      setUserId(user?._id || null);
+      setUserId(user?.userId || user?._id || null);
     };
     fetchUserId();
   }, []);
@@ -130,28 +131,43 @@ export default function ChapterScreen({ route, navigation }) {
   const handleLikeComment = async (commentId) => {
     const userInfo = await AsyncStorage.getItem('userInfo');
     const user = userInfo ? JSON.parse(userInfo) : null;
-    if (!user || !user._id) {
+    if (!user || !user.userId) {
       Alert.alert("Bạn cần đăng nhập để like!");
+      return;
+    }
+    const token = await SecureStore.getItemAsync("userToken");
+    if (!token) {
+      Alert.alert("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.");
       return;
     }
     try {
       const res = await axios.patch(
         `http://${IP}:333/api/comment/like/${commentId}`,
-        { userId: user._id }
+        { userId: user.userId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (res.data.success) {
         setComments(comments =>
           comments.map(c =>
             c._id === commentId
-              ? { ...c, likes: res.data.liked
-                  ? [...(c.likes || []), user._id]
-                  : (c.likes || []).filter(id => id !== user._id)
+              ? {
+                  ...c,
+                  reactions: c.reactions
+                    ? (res.data.liked
+                        ? [...c.reactions, { userId: user.userId, type: 'like' }]
+                        : c.reactions.filter(r => !(r.userId === user.userId && r.type === 'like')))
+                    : (res.data.liked ? [{ userId: user.userId, type: 'like' }] : [])
                 }
               : c
           )
         );
       }
     } catch (err) {
+      console.error("LIKE COMMENT ERROR:", err?.response?.data || err.message);
       Alert.alert("Lỗi like comment!");
     }
   };
@@ -159,28 +175,36 @@ export default function ChapterScreen({ route, navigation }) {
   const handleReportComment = async (commentId) => {
     const userInfo = await AsyncStorage.getItem('userInfo');
     const user = userInfo ? JSON.parse(userInfo) : null;
-    if (!user || !user._id) {
+    if (!user || !user.userId) {
       Alert.alert("Bạn cần đăng nhập để báo cáo!");
       return;
     }
-    Alert.alert(
-      "Report Comment",
-      "Bạn có chắc chắn muốn báo cáo bình luận này không?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Report", style: "destructive", onPress: async () => {
-          try {
-            await axios.post(`http://${IP}:333/api/comment/report/${commentId}`, {
-              userId: user._id,
-              reason: "Inappropriate comment",
-            });
-            Alert.alert("Đã gửi báo cáo!");
-          } catch (err) {
-            Alert.alert("Lỗi gửi báo cáo!");
-          }
-        }}
-      ]
-    );
+    const token = await SecureStore.getItemAsync("userToken");
+    if (!token) {
+      Alert.alert("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.");
+      return;
+    }
+    try {
+      const res = await axios.post(
+        `http://${IP}:333/api/comment/report/${commentId}`,
+        {
+          userId: user.userId,
+          reason: "Inappropriate comment", // Có thể cho nhập lý do sau
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.data.success) {
+        Alert.alert("Đã gửi báo cáo bình luận!");
+      } else {
+        Alert.alert(res.data.message || "Lỗi gửi báo cáo!");
+      }
+    } catch (err) {
+      Alert.alert("Lỗi gửi báo cáo!");
+    }
   };
 
   if (loading) return (
@@ -291,16 +315,17 @@ export default function ChapterScreen({ route, navigation }) {
         <View style={{ paddingHorizontal: 12, backgroundColor: "#FFF", borderRadius: 12, paddingVertical: 32 }}>
           <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}>Comments</Text>
           {comments.length > 0 ? (
-            comments.map(item => (
-              <View key={item._id} style={{ marginBottom: 12 }}>
-                <Text style={{ fontWeight: "bold" }}>{item.user?.name || "User"}</Text>
-                <Text>{item.content}</Text>
-                <Text style={{ fontSize: 12, color: "#888" }}>{new Date(item.createdAt).toLocaleString()}</Text>
+            comments.map((item) => (
+              <View key={item._id} style={{ padding: 8, borderBottomWidth: 1, borderColor: "#eee" }}>
+                <Text style={{ fontSize: 14 }}>{item.content}</Text>
+                <Text style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
+                  {new Date(item.createdAt).toLocaleString()}
+                </Text>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <TouchableOpacity onPress={() => handleLikeComment(item._id)}>
-                    <Text style={{ fontSize: 18, color: item.likes?.includes(userId) ? "#1976D2" : "#888" }}>👍</Text>
+                    <Text style={{ fontSize: 18, color: item.reactions?.filter(r => r.type === 'like').some(r => r.userId === userId) ? "#1976D2" : "#888" }}>👍</Text>
                   </TouchableOpacity>
-                  <Text style={{ marginLeft: 4 }}>{item.likes?.length || 0}</Text>
+                  <Text style={{ marginLeft: 4 }}>{item.reactions?.filter(r => r.type === 'like').length || 0}</Text>
                   <TouchableOpacity onPress={() => handleReportComment(item._id)} style={{ marginLeft: 12 }}>
                     <Text style={{ color: "#E53935", fontWeight: "bold" }}>🚩</Text>
                   </TouchableOpacity>
@@ -310,7 +335,8 @@ export default function ChapterScreen({ route, navigation }) {
           ) : (
             <Text style={{ fontStyle: "italic", color: "#888" }}>No comments yet.</Text>
           )}
-          <View style={{ flexDirection: "row", marginTop: 8, alignItems: "center" }}>
+          {/* UI nhập comment giống DetailScreen */}
+          <View style={{ flexDirection: "row", marginTop: 12, alignItems: "center" }}>
             <TextInput
               style={{
                 flex: 1,

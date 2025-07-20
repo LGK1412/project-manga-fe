@@ -13,6 +13,8 @@ import {
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TopNav from "./TopNav";
+import { IP } from '../constants/config';
+import * as SecureStore from "expo-secure-store";
 
 export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
   const { id } = route.params;
@@ -51,7 +53,8 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
   // Thêm 2 hàm helper để lấy số trung bình và số vote
   const getAverage = (ratings) => {
     if (!Array.isArray(ratings) || ratings.length === 0) return "0.0";
-    const total = ratings.reduce((sum, r) => sum + (typeof r === "number" ? r : 0), 0);
+    // Hỗ trợ cả mảng số và mảng object
+    const total = ratings.reduce((sum, r) => sum + (typeof r === "number" ? r : (r.value || 0)), 0);
     return (total / ratings.length).toFixed(1);
   };
   const getVoteCount = (ratings) => (Array.isArray(ratings) ? ratings.length : 0);
@@ -60,62 +63,149 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
   const handleCloseRatingModal = () => setShowRatingModal(false);
   const handleRate = async (value) => {
     setSelectedRating(value);
-    // TODO: Gửi API lên backend để rate truyện, sau đó fetch lại manga nếu cần
     setShowRatingModal(false);
+    try {
+      const userInfo = await AsyncStorage.getItem("userInfo");
+      const user = userInfo ? JSON.parse(userInfo) : null;
+      if (!user?.userId) {
+        alert("Bạn cần đăng nhập để đánh giá!");
+        return;
+      }
+      const token = await SecureStore.getItemAsync("userToken");
+      if (!token) {
+        alert("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.");
+        return;
+      }
+      // Gửi rate lên backend
+      const res = await axios.post(
+        `http://${IP}:333/api/manga/${id}/rate`,
+        { userId: user.userId, value },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.data.success) {
+        // Cập nhật lại manga với rating mới
+        setManga((prev) => ({
+          ...prev,
+          rating: [
+            // Loại bỏ rating cũ của user này (nếu có), thêm rating mới
+            ...(prev.rating?.filter(r => r.userId && r.userId !== user.userId) || []),
+            { userId: user.userId, value }
+          ]
+        }));
+        // Hoặc fetch lại manga từ backend nếu muốn chắc chắn
+      } else {
+        alert(res.data.message || "Không thể đánh giá!");
+      }
+    } catch (err) {
+      alert("Lỗi khi gửi đánh giá!");
+    }
   };
 
   const handleSendComment = async () => {
     if (!newComment.trim()) return;
     setSending(true);
+
     try {
-      const userInfo = await AsyncStorage.getItem('userInfo');
+      const userInfo = await AsyncStorage.getItem("userInfo");
       const user = userInfo ? JSON.parse(userInfo) : null;
-      if (!user || !user._id) {
+
+      // DEBUG: Log giá trị trước khi gửi
+      console.log("DEBUG COMMENT:", {
+        mangaId: manga._id,
+      serId: user?.userId,
+        userIdAlt: user?._id,
+        content: newComment
+      });
+
+      if (!user?.userId && !user?._id) {
         alert("Bạn cần đăng nhập để bình luận!");
         setSending(false);
         return;
       }
+
+      const token = await SecureStore.getItemAsync("userToken");
+      if (!token) {
+        alert("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.");
+        setSending(false);
+        return;
+      }
+
       const res = await axios.post(
         `http://${IP}:333/api/comment/manga/${manga._id}`,
-        { userId: user._id, content: newComment }
+        {
+          mangaId: manga._id, // Đảm bảo dùng _id
+          userId: user.userId || user._id, // Thử cả hai trường
+          content: newComment,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      if (res.data.success) {
+
+      if (res.data.success && res.data.comment) {
         setComments([res.data.comment, ...comments]);
         setNewComment("");
       } else {
         alert(res.data.message || "Gửi bình luận thất bại!");
       }
     } catch (err) {
+      console.error("Comment error:", err?.response?.data || err.message);
       alert("Lỗi gửi bình luận!");
     }
+
     setSending(false);
   };
+
+
 
   const handleLikeComment = async (commentId) => {
     const userInfo = await AsyncStorage.getItem('userInfo');
     const user = userInfo ? JSON.parse(userInfo) : null;
-    if (!user || !user._id) {
+    if (!user || !user.userId) {
       alert("Bạn cần đăng nhập để like!");
       return;
     }
+    const token = await SecureStore.getItemAsync("userToken");
+    if (!token) {
+      alert("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.");
+      return;
+    }
     try {
+      // DEBUG: Log giá trị userId và commentId
+      console.log("LIKE DEBUG:", { userId: user.userId, commentId });
       const res = await axios.patch(
         `http://${IP}:333/api/comment/like/${commentId}`,
-        { userId: user._id }
+        { userId: user.userId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (res.data.success) {
         setComments(comments =>
           comments.map(c =>
             c._id === commentId
-              ? { ...c, likes: res.data.liked
-                  ? [...(c.likes || []), user._id]
-                  : (c.likes || []).filter(id => id !== user._id)
+              ? {
+                  ...c,
+                  reactions: c.reactions
+                    ? (res.data.liked
+                        ? [...c.reactions, { userId: user.userId, type: 'like' }]
+                        : c.reactions.filter(r => !(r.userId === user.userId && r.type === 'like')))
+                    : (res.data.liked ? [{ userId: user.userId, type: 'like' }] : [])
                 }
               : c
           )
         );
       }
     } catch (err) {
+      console.error("LIKE COMMENT ERROR:", err?.response?.data || err.message);
       alert("Lỗi like comment!");
     }
   };
@@ -123,28 +213,36 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
   const handleReportComment = async (commentId) => {
     const userInfo = await AsyncStorage.getItem('userInfo');
     const user = userInfo ? JSON.parse(userInfo) : null;
-    if (!user || !user._id) {
-      Alert.alert("Bạn cần đăng nhập để báo cáo!");
+    if (!user || !user.userId) {
+      alert("Bạn cần đăng nhập để báo cáo!");
       return;
     }
-    Alert.alert(
-      "Report Comment",
-      "Bạn có chắc chắn muốn báo cáo bình luận này không?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Report", style: "destructive", onPress: async () => {
-          try {
-            await axios.post(`http://${IP}:333/api/comment/report/${commentId}`, {
-              userId: user._id,
-              reason: "Inappropriate comment",
-            });
-            Alert.alert("Đã gửi báo cáo!");
-          } catch (err) {
-            Alert.alert("Lỗi gửi báo cáo!");
-          }
-        }}
-      ]
-    );
+    const token = await SecureStore.getItemAsync("userToken");
+    if (!token) {
+      alert("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.");
+      return;
+    }
+    try {
+      const res = await axios.post(
+        `http://${IP}:333/api/comment/report/${commentId}`,
+        {
+          userId: user.userId,
+          reason: "Inappropriate comment", // Có thể cho nhập lý do sau
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.data.success) {
+        alert("Đã gửi báo cáo bình luận!");
+      } else {
+        alert(res.data.message || "Lỗi gửi báo cáo!");
+      }
+    } catch (err) {
+      alert("Lỗi gửi báo cáo!");
+    }
   };
 
   useEffect(() => {
@@ -272,9 +370,9 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <TouchableOpacity onPress={() => handleLikeComment(item._id)}>
-                  <Text style={{ fontSize: 18, color: item.likes?.includes(userId) ? "#1976D2" : "#888" }}>👍</Text>
+                  <Text style={{ fontSize: 18, color: item.reactions?.filter(r => r.type === 'like').some(r => r.userId === userId) ? "#1976D2" : "#888" }}>👍</Text>
                 </TouchableOpacity>
-                <Text style={{ marginLeft: 4 }}>{item.likes?.length || 0}</Text>
+                <Text style={{ marginLeft: 4 }}>{item.reactions?.filter(r => r.type === 'like').length || 0}</Text>
                 <TouchableOpacity onPress={() => handleReportComment(item._id)} style={{ marginLeft: 12 }}>
                   <Text style={{ color: "#E53935", fontWeight: "bold" }}>🚩</Text>
                 </TouchableOpacity>

@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { ThemeContext } from '../contexts/ThemeContext';
-import { IP } from '../contexts/AuthContext'
+import { IP } from '../constants/config';
 
 export default function HomeScreen({ navigation }) {
   const { isDarkMode } = useContext(ThemeContext);
