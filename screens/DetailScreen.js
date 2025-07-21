@@ -11,12 +11,13 @@ import {
   Alert,
 } from "react-native";
 import axios from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import TopNav from "./TopNav";
-import { IP } from '../constants/config';
+import { IP } from "../constants/config";
 import * as SecureStore from "expo-secure-store";
 
 export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
+  const BASE_IMAGE_URL = `http://${IP}:333/thumbnails/`;
   const { id } = route.params;
 
   const [manga, setManga] = useState(null);
@@ -54,10 +55,14 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
   const getAverage = (ratings) => {
     if (!Array.isArray(ratings) || ratings.length === 0) return "0.0";
     // Hỗ trợ cả mảng số và mảng object
-    const total = ratings.reduce((sum, r) => sum + (typeof r === "number" ? r : (r.value || 0)), 0);
+    const total = ratings.reduce(
+      (sum, r) => sum + (typeof r === "number" ? r : r.value || 0),
+      0
+    );
     return (total / ratings.length).toFixed(1);
   };
-  const getVoteCount = (ratings) => (Array.isArray(ratings) ? ratings.length : 0);
+  const getVoteCount = (ratings) =>
+    Array.isArray(ratings) ? ratings.length : 0;
 
   const handleOpenRatingModal = () => setShowRatingModal(true);
   const handleCloseRatingModal = () => setShowRatingModal(false);
@@ -92,9 +97,11 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
           ...prev,
           rating: [
             // Loại bỏ rating cũ của user này (nếu có), thêm rating mới
-            ...(prev.rating?.filter(r => r.userId && r.userId !== user.userId) || []),
-            { userId: user.userId, value }
-          ]
+            ...(prev.rating?.filter(
+              (r) => r.userId && r.userId !== user.userId
+            ) || []),
+            { userId: user.userId, value },
+          ],
         }));
         // Hoặc fetch lại manga từ backend nếu muốn chắc chắn
       } else {
@@ -116,9 +123,9 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
       // DEBUG: Log giá trị trước khi gửi
       console.log("DEBUG COMMENT:", {
         mangaId: manga._id,
-      serId: user?.userId,
+        serId: user?.userId,
         userIdAlt: user?._id,
-        content: newComment
+        content: newComment,
       });
 
       if (!user?.userId && !user?._id) {
@@ -162,10 +169,8 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
     setSending(false);
   };
 
-
-
   const handleLikeComment = async (commentId) => {
-    const userInfo = await AsyncStorage.getItem('userInfo');
+    const userInfo = await AsyncStorage.getItem("userInfo");
     const user = userInfo ? JSON.parse(userInfo) : null;
     if (!user || !user.userId) {
       alert("Bạn cần đăng nhập để like!");
@@ -189,16 +194,21 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
         }
       );
       if (res.data.success) {
-        setComments(comments =>
-          comments.map(c =>
+        setComments((comments) =>
+          comments.map((c) =>
             c._id === commentId
               ? {
                   ...c,
                   reactions: c.reactions
-                    ? (res.data.liked
-                        ? [...c.reactions, { userId: user.userId, type: 'like' }]
-                        : c.reactions.filter(r => !(r.userId === user.userId && r.type === 'like')))
-                    : (res.data.liked ? [{ userId: user.userId, type: 'like' }] : [])
+                    ? res.data.liked
+                      ? [...c.reactions, { userId: user.userId, type: "like" }]
+                      : c.reactions.filter(
+                          (r) =>
+                            !(r.userId === user.userId && r.type === "like")
+                        )
+                    : res.data.liked
+                    ? [{ userId: user.userId, type: "like" }]
+                    : [],
                 }
               : c
           )
@@ -211,7 +221,7 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
   };
 
   const handleReportComment = async (commentId) => {
-    const userInfo = await AsyncStorage.getItem('userInfo');
+    const userInfo = await AsyncStorage.getItem("userInfo");
     const user = userInfo ? JSON.parse(userInfo) : null;
     if (!user || !user.userId) {
       alert("Bạn cần đăng nhập để báo cáo!");
@@ -244,6 +254,12 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
       alert("Lỗi gửi báo cáo!");
     }
   };
+  const imageUri = manga?.image
+  ? manga.image.startsWith("http")
+    ? manga.image
+    : `${BASE_IMAGE_URL}${manga.image}?t=${Date.now()}`
+  : null;
+
 
   useEffect(() => {
     setLoading(true);
@@ -283,19 +299,20 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const userInfo = await AsyncStorage.getItem('userInfo');
+      const userInfo = await AsyncStorage.getItem("userInfo");
       const user = userInfo ? JSON.parse(userInfo) : null;
       setUserId(user?._id || null);
     };
     fetchUserId();
   }, []);
 
-  if (loading) return (
-    <View style={{ flex: 1, padding: 16, backgroundColor: "#fff" }}>
-      <TopNav currentRoute="Detail" mangaId={id} />
-      <ActivityIndicator style={styles.loader} size="large" />
-    </View>
-  );
+  if (loading)
+    return (
+      <View style={{ flex: 1, padding: 16, backgroundColor: "#fff" }}>
+        <TopNav currentRoute="Detail" mangaId={id} />
+        <ActivityIndicator style={styles.loader} size="large" />
+      </View>
+    );
   if (error)
     return (
       <View style={{ flex: 1, padding: 16, backgroundColor: "#fff" }}>
@@ -312,12 +329,16 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
     );
 
   console.log(comments.length);
+
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: "#fff" }}>
       <TopNav currentRoute="Detail" mangaId={id} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.header}>Manga Details</Text>
-        <Image source={{ uri: manga.image }} style={styles.coverImage} />
+
+        {imageUri && (
+          <Image source={{ uri: imageUri }} style={styles.coverImage} />
+        )}
 
         <Text style={styles.title}>{manga.name}</Text>
         <Text style={styles.description}>
@@ -330,7 +351,11 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
         </Text>
         <TouchableOpacity
           onPress={handleOpenRatingModal}
-          style={{ flexDirection: "row", alignItems: "center", marginVertical: 4 }}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginVertical: 4,
+          }}
         >
           <Text style={styles.info}>Rating: {getAverage(manga.rating)} </Text>
           <Text style={{ fontSize: 18, color: "#FFD700" }}>⭐</Text>
@@ -370,11 +395,29 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <TouchableOpacity onPress={() => handleLikeComment(item._id)}>
-                  <Text style={{ fontSize: 18, color: item.reactions?.filter(r => r.type === 'like').some(r => r.userId === userId) ? "#1976D2" : "#888" }}>👍</Text>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      color: item.reactions
+                        ?.filter((r) => r.type === "like")
+                        .some((r) => r.userId === userId)
+                        ? "#1976D2"
+                        : "#888",
+                    }}
+                  >
+                    👍
+                  </Text>
                 </TouchableOpacity>
-                <Text style={{ marginLeft: 4 }}>{item.reactions?.filter(r => r.type === 'like').length || 0}</Text>
-                <TouchableOpacity onPress={() => handleReportComment(item._id)} style={{ marginLeft: 12 }}>
-                  <Text style={{ color: "#E53935", fontWeight: "bold" }}>🚩</Text>
+                <Text style={{ marginLeft: 4 }}>
+                  {item.reactions?.filter((r) => r.type === "like").length || 0}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => handleReportComment(item._id)}
+                  style={{ marginLeft: 12 }}
+                >
+                  <Text style={{ color: "#E53935", fontWeight: "bold" }}>
+                    🚩
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -383,7 +426,9 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
           <Text style={styles.emptyText}>No comments yet.</Text>
         )}
         {/* Thêm UI nhập comment dưới phần comments */}
-        <View style={{ flexDirection: "row", marginTop: 12, alignItems: "center" }}>
+        <View
+          style={{ flexDirection: "row", marginTop: 12, alignItems: "center" }}
+        >
           <TextInput
             style={{
               flex: 1,
@@ -402,7 +447,8 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
             onPress={handleSendComment}
             disabled={sending || !newComment.trim()}
             style={{
-              backgroundColor: sending || !newComment.trim() ? "#ccc" : "#1976D2",
+              backgroundColor:
+                sending || !newComment.trim() ? "#ccc" : "#1976D2",
               paddingVertical: 8,
               paddingHorizontal: 16,
               borderRadius: 8,
@@ -415,15 +461,30 @@ export default function DetailScreen({ route, navigation, setCurrentMangaId }) {
       {showRatingModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>Rate this manga</Text>
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              Rate this manga
+            </Text>
             <View style={{ flexDirection: "row", marginVertical: 12 }}>
-              {[1,2,3,4,5].map(star => (
+              {[1, 2, 3, 4, 5].map((star) => (
                 <TouchableOpacity key={star} onPress={() => handleRate(star)}>
-                  <Text style={{ fontSize: 32, color: selectedRating && selectedRating >= star ? "#FFD700" : "#ccc" }}>★</Text>
+                  <Text
+                    style={{
+                      fontSize: 32,
+                      color:
+                        selectedRating && selectedRating >= star
+                          ? "#FFD700"
+                          : "#ccc",
+                    }}
+                  >
+                    ★
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
-            <TouchableOpacity onPress={handleCloseRatingModal} style={{ marginTop: 8 }}>
+            <TouchableOpacity
+              onPress={handleCloseRatingModal}
+              style={{ marginTop: 8 }}
+            >
               <Text style={{ color: "blue" }}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -461,7 +522,10 @@ const styles = StyleSheet.create({
   error: { color: "red", textAlign: "center", marginTop: 20 },
   modalOverlay: {
     position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
     alignItems: "center",

@@ -9,16 +9,24 @@ import {
   ActivityIndicator,
 } from "react-native";
 import axios from "axios";
-import { ThemeContext } from '../contexts/ThemeContext';
-import { IP } from '../constants/config';
+import { ThemeContext } from "../contexts/ThemeContext";
+import { IP } from "../constants/config";
+//Thêm
+import NotificationBell from "../components/NotificationBell";
+import NotificationDropdown from "../components/NotificationDropdown";
 
 export default function HomeScreen({ navigation }) {
+  const BASE_IMAGE_URL = `http://${IP}:333/thumbnails/`;
   const { isDarkMode } = useContext(ThemeContext);
   const [trending, setTrending] = useState([]);
   const [categories, setCategories] = useState([]);
   const [mangaList, setMangaList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  //Thêm
+  const [notifications, setNotifications] = useState([]);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  // Thêm
 
   // Helper to safely format ratings
   const formatRating = (ratings) => {
@@ -86,10 +94,39 @@ export default function HomeScreen({ navigation }) {
     );
   }
 
+  const getImageUri = (img) =>
+    img?.startsWith("http") ? img : `${BASE_IMAGE_URL}${img}?t=${Date.now()}`;
+
   return (
-    <ScrollView style={[styles.container, isDarkMode && styles.darkContainer]} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.container, isDarkMode && styles.darkContainer]}
+      showsVerticalScrollIndicator={false}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          marginTop: 16,
+        }}
+      >
+        <Text style={[styles.header, { marginBottom: 0 }]}>Trending Manga</Text>
+        <NotificationBell
+          count={notifications.filter((n) => !n.read).length}
+          onPress={() => setDropdownVisible(!dropdownVisible)}
+        />
+      </View>
+
+      <NotificationDropdown
+        visible={dropdownVisible}
+        notifications={notifications}
+        onClose={() => setDropdownVisible(false)}
+        setNotifications={setNotifications} // <- Đảm bảo truyền dòng này
+      />
+
       {/* Trending Titles — horizontal scroll */}
-      <Text style={[styles.header, isDarkMode && styles.darkText]}>Trending Manga</Text>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -102,9 +139,7 @@ export default function HomeScreen({ navigation }) {
             style={styles.trendingItem}
           >
             <Image
-              source={{
-                uri: item.coverImage || "https://via.placeholder.com/150x200",
-              }}
+              source={{ uri: getImageUri(item.image) }}
               style={styles.mangaCover}
             />
             <View style={styles.mangaOverlay}>
@@ -165,9 +200,7 @@ export default function HomeScreen({ navigation }) {
             style={styles.listItemContainer}
           >
             <Image
-              source={{
-                uri: item.coverImage || "https://via.placeholder.com/150x200",
-              }}
+              source={{ uri: getImageUri(item.image) }}
               style={styles.mangaCover}
             />
             <View style={styles.mangaOverlay}>
@@ -236,10 +269,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   darkText: {
-    color: '#fff',
+    color: "#fff",
   },
   trendingItem: {
-    backgroundColor: "#6200EA",
+    backgroundColor: "#d1cdd6ff",
     padding: 12,
     borderRadius: 12,
     marginRight: 12,

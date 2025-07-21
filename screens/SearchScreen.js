@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
-import { IP } from "../constants/config"
+import { IP } from "../constants/config";
 
 export default function SearchScreen({ navigation }) {
   const [categories, setCategories] = useState([]);
@@ -91,15 +91,31 @@ export default function SearchScreen({ navigation }) {
     );
     return sum / ratings.length;
   };
+  // Helper to safely format ratings
   const formatRating = (ratings) => {
-    const avg = getAvg(ratings);
-    return ratings.length ? avg.toFixed(1) : "N/A";
+    if (!Array.isArray(ratings) || ratings.length === 0) {
+      return "No ratings";
+    }
+    const total = ratings.reduce(
+      (sum, r) => sum + (typeof r === "number" ? r : 0),
+      0
+    );
+    const avg = total / ratings.length;
+    return `${avg.toFixed(1)}`;
   };
+
+  // Helper to safely format genres
   const formatGenres = (genres) => {
-    if (!Array.isArray(genres) || !genres.length) return "Unknown";
+    if (!Array.isArray(genres) || genres.length === 0) {
+      return "Unknown Genre";
+    }
+
     return genres
-      .map((g) => (typeof g === "string" ? g : g?.name))
-      .filter((n) => n)
+      .map((g) => {
+        // if it’s already a string, use it; otherwise grab .name
+        return typeof g === "string" ? g : g?.name;
+      })
+      .filter((name) => typeof name === "string" && name.trim().length > 0)
       .join(" • ");
   };
 
@@ -201,7 +217,7 @@ export default function SearchScreen({ navigation }) {
             style={styles.card}
             onPress={() => navigation.navigate("Detail", { id: item._id })}
           >
-            <Image source={{ uri: item.coverImage }} style={styles.cover} />
+            <Image source={{ uri: `http://${IP}:333/thumbnails/${item.image}?t=${Date.now()}` }} style={styles.cover} />
             <View style={styles.overlay}>
               <View style={styles.ratingBadge}>
                 <Text style={styles.ratingText}>
@@ -292,7 +308,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   picker: {
-    height: 40,
+    height: 49,
     width: "100%",
   },
 
